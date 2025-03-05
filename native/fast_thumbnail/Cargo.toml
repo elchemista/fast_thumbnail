@@ -12,3 +12,4 @@ crate-type = ["cdylib"]
 rustler = "0.36"
 fast_image_resize = { version = "5.1.2", features = ["image"] }
 image = "0.24.4"
+base64 = "0.22.1"
