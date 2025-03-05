@@ -4,10 +4,20 @@ defmodule FastThumbnail.MixProject do
   def project do
     [
       app: :fast_thumbnail,
+      name: "Fast Thumbnail - Generate Thumbnails using Rust",
       version: "0.1.0",
       elixir: "~> 1.18",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      description: description(),
+      package: package(),
+      docs: [
+        main: "Fast Thumbnail",
+        extras: [
+          "README.md",
+          "LICENSE"
+        ]
+      ]
     ]
   end
 
@@ -18,11 +28,29 @@ defmodule FastThumbnail.MixProject do
     ]
   end
 
+  defp description() do
+    "Generate Thumbnails using rust library for fast image resizing using of SIMD instructions."
+  end
+
+  defp package() do
+    [
+      licenses: ["MIT"],
+      links: %{
+        project: "https://github.com/elchemista/fast_thumbnail",
+        developer_github: "https://github.com/elchemista"
+      }
+    ]
+  end
+
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      # {:dep_from_hexpm, "~> 0.3.0"},
-      # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
+      {:rustler, "~> 0.36.1"},
+      {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
+      {:benchee, "~> 1.0", only: :dev},
+      # Documentation Provider
+      {:ex_doc, "~> 0.28.3", only: [:dev, :test], optional: true, runtime: false},
+      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false}
     ]
   end
 end
