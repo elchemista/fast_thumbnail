@@ -1,18 +1,17 @@
 defmodule FastThumbnail do
-  @moduledoc """
-  Documentation for `FastThumbnail`.
-  """
+  use Rustler,
+    otp_app: :fast_thumbnail,
+    crate: "fast_thumbnail"
 
   @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> FastThumbnail.hello()
-      :world
-
+  Creates a thumbnail (width x width), cropping to center, overwriting the
+  file in-place and returning {:ok, path} or {:error, reason}.
   """
-  def hello do
-    :world
+  @spec create(path :: String.t(), width :: integer()) :: {:ok, String.t()} | {:error, String.t()}
+  def create(path, width) when is_bitstring(path) and is_integer(width) do
+    nif_create(path, width)
   end
+
+  defp nif_create(_path, _width),
+    do: :erlang.nif_error(:nif_not_loaded)
 end
