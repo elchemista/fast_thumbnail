@@ -56,7 +56,7 @@ iex> FastThumbnail.create("images/photo.jpg", 300, :base64)
 
 ## Example Liveview
 
-Below is a **LiveView** example that builds on your provided upload flow and demonstrates:
+Below is a **LiveView**:
 
 ```elixir
 defmodule MyAppWeb.UploadLive do
