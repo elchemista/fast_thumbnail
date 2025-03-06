@@ -1,4 +1,4 @@
-use rustler::nif;
+use rustler;
 use std::fs::File;
 use std::io::{BufWriter, Cursor};
 
@@ -14,7 +14,7 @@ use base64::{engine::general_purpose::STANDARD, Engine as _};
 ///  - "base64": return a base64-encoded WebP (no file I/O)
 ///  - "webp":   write a new `"{path}.webp"` file
 ///  - "overwrite":   overwrite in the *original format* (JPEG→JPEG, PNG→PNG, etc.)
-#[nif]
+#[rustler::nif(schedule = "DirtyCpu")]
 fn nif_create(path: String, width: u32, mode: String) -> Result<String, String> {
     let reader = ImageReader::open(&path).map_err(|e| e.to_string())?;
     let original_format = reader.format();

@@ -3,6 +3,9 @@ defmodule FastThumbnail do
     otp_app: :fast_thumbnail,
     crate: "fast_thumbnail"
 
+  @moduledoc "README.md"
+             |> File.read!()
+
   @doc """
   Creates a thumbnail (width x width), cropping to center, and returning {:ok, path} or {:error, reason}.
 
