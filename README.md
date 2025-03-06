@@ -174,6 +174,6 @@ Under the hood, the Elixir function calls a Rust NIF which performs a **single-p
 
 ## License
 
-FastThumbnail is licensed under the [MIT License](LICENSE).  
+FastThumbnail is licensed under the [Apache License, Version 2.0](LICENSE).
 
 *fast_image_resize* is distributed under its own license. Please refer to its repository for details.
