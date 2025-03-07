@@ -1,19 +1,22 @@
 use rustler;
 use std::fs::File;
-use std::io::{BufWriter, Cursor};
+use std::io::{BufWriter, Write};
 
 use image::io::Reader as ImageReader;
-use image::{DynamicImage, ImageBuffer, ImageOutputFormat, Rgba};
+use image::{DynamicImage, ImageBuffer, Rgba};
 
 use fast_image_resize::{images::Image as FirImage, pixels::PixelType, ResizeOptions, Resizer};
 
 use base64::{engine::general_purpose::STANDARD, Engine as _};
 
+use libwebp_sys::WebPImageHint;
+use webp::{Encoder as WebPEncoder, PixelLayout, WebPConfig};
+
 /// Performs a center-crop to square + resize to `width x width`.
 /// Then:
-///  - "base64": return a base64-encoded WebP (no file I/O)
-///  - "webp":   write a new `"{path}.webp"` file
-///  - "overwrite":   overwrite in the *original format* (JPEG→JPEG, PNG→PNG, etc.)
+///  - "base64": return a base64-encoded optimized WebP (no file I/O)
+///  - "webp":   write an optimized `"{path}.webp"` file
+///  - "overwrite": overwrite in the *original* format (JPEG→JPEG, PNG→PNG, etc.)
 #[rustler::nif(schedule = "DirtyCpu")]
 fn nif_create(path: String, width: u32, mode: String) -> Result<String, String> {
     let reader = ImageReader::open(&path).map_err(|e| e.to_string())?;
@@ -47,45 +50,56 @@ fn nif_create(path: String, width: u32, mode: String) -> Result<String, String> 
 
     match mode.as_str() {
         "base64" => {
-            let mut buf = Vec::new();
-            resized_img
-                .write_to(&mut Cursor::new(&mut buf), ImageOutputFormat::WebP)
-                .map_err(|e| e.to_string())?;
-
-            // Base64-encode
-            let b64 = STANDARD.encode(&buf);
+            let webp_data = encode_webp_advanced(&resized_img, 75.0)?;
+            let b64 = STANDARD.encode(webp_data);
             Ok(b64)
         }
 
         "webp" => {
+            let webp_data = encode_webp_advanced(&resized_img, 75.0)?;
             let new_path = format!("{}.webp", path);
             let file = File::create(&new_path).map_err(|e| e.to_string())?;
             let mut writer = BufWriter::new(file);
-
-            resized_img
-                .write_to(&mut writer, ImageOutputFormat::WebP)
-                .map_err(|e| e.to_string())?;
-
+            writer.write_all(&webp_data).map_err(|e| e.to_string())?;
             Ok(new_path)
         }
 
         "overwrite" => {
-            let fmt = match original_format {
-                Some(f) => f,
-                None => return Err("Could not determine original format".to_string()),
-            };
+            // Overwrite the file in its original format (JPEG→JPEG, PNG→PNG, etc.).
+            let fmt =
+                original_format.ok_or_else(|| "Could not determine original format".to_string())?;
 
-            // Overwrite the file in the same format
             resized_img
                 .save_with_format(&path, fmt)
                 .map_err(|e| e.to_string())?;
-
             Ok(path)
         }
 
-        // Unknown mode
         _ => Err(format!("Unknown mode: {}", mode)),
     }
+}
+
+/// Encode a `DynamicImage` as a quality‐tuned WebP using the `webp` crate.
+fn encode_webp_advanced(img: &DynamicImage, quality: f32) -> Result<Vec<u8>, String> {
+    let rgba8 = img.to_rgba8();
+    let (w, h) = rgba8.dimensions();
+
+    let encoder = WebPEncoder::new(&rgba8, PixelLayout::Rgba, w, h);
+
+    // Configure the WebP encoder.
+    let mut config = WebPConfig::new().map_err(|_| "Could not create WebP config".to_string())?;
+    config.method = 3;
+    config.image_hint = WebPImageHint::WEBP_HINT_PHOTO;
+    config.sns_strength = 70;
+    config.filter_sharpness = 2;
+    config.filter_strength = 25;
+    config.quality = quality;
+
+    let webp_data = encoder
+        .encode_advanced(&config)
+        .map_err(|e| format!("WebP encoding error: {:?}", e))?;
+
+    Ok(webp_data.to_vec())
 }
 
 rustler::init!("Elixir.FastThumbnail");
