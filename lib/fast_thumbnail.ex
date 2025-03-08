@@ -1,7 +1,12 @@
 defmodule FastThumbnail do
-  use Rustler,
+  version = Mix.Project.config()[:version]
+
+  use RustlerPrecompiled,
     otp_app: :fast_thumbnail,
-    crate: "fast_thumbnail"
+    crate: "fast_thumbnail",
+    base_url: "https://github.com/ryochin/thumbp/releases/download/v#{version}",
+    force_build: System.get_env("RUSTLER_PRECOMPILATION_EXAMPLE_BUILD") in ["1", "true"],
+    version: version
 
   @moduledoc "README.md"
              |> File.read!()
