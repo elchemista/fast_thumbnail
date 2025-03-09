@@ -170,6 +170,7 @@ Under the hood, the Elixir function calls a Rust NIF which performs a **single-p
 - **[fast_image_resize](https://github.com/Cykooz/fast_image_resize)** – the Rust crate that powers the SIMD-accelerated resizing. See also:
   - [Crates.io](https://crates.io/crates/fast_image_resize)
   - [Docs.rs](https://docs.rs/fast_image_resize)
+- **[Thumbp](https://github.com/ryochin/thumbp)** - Another excellent Elixir library that provides a fast and efficient way to generate thumbnails from images.
 - **[rustler](https://github.com/rusterlium/rustler)** – used for building the native Rust code as an Elixir NIF.
 
 ## License
