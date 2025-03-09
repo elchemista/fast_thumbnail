@@ -25,7 +25,7 @@ Add `fast_thumbnail` to your dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:fast_thumbnail, "~> 0.1.2", github: "elchemista/fast_thumbnail"}
+    {:fast_thumbnail, "~> 0.1.3", github: "elchemista/fast_thumbnail"}
   ]
 end
 ```

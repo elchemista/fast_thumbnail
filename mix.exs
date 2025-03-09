@@ -1,14 +1,15 @@
 defmodule FastThumbnail.MixProject do
   use Mix.Project
 
-  @version "0.1.2"
+  @version "0.1.3"
 
   def project do
     [
       app: :fast_thumbnail,
       name: "Fast Thumbnail - Generate Thumbnails using Rust",
-      version: "0.1.2",
+      version: @version,
       elixir: "~> 1.18",
+      build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       description: description(),
@@ -19,14 +20,15 @@ defmodule FastThumbnail.MixProject do
           "README.md",
           "LICENSE"
         ]
-      ]
+      ],
+      source_url: "https://github.com/elchemista/fast_thumbnail",
+      homepage_url: "https://github.com/elchemista/fast_thumbnail"
     ]
   end
 
-  # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: []
     ]
   end
 
@@ -36,10 +38,12 @@ defmodule FastThumbnail.MixProject do
 
   defp package() do
     [
-      licenses: ["MIT"],
+      name: "fast_thumbnail",
+      maintainers: ["Yuriy Zhar"],
+      files: ~w(mix.exs README.md lib native test LICENSE checksum-*.exs .formatter.exs),
+      licenses: ["Apache-2.0"],
       links: %{
-        project: "https://github.com/elchemista/fast_thumbnail",
-        developer_github: "https://github.com/elchemista"
+        "GitHub" => "https://github.com/elchemista/fast_thumbnail"
       }
     ]
   end
@@ -47,7 +51,7 @@ defmodule FastThumbnail.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:rustler, "~> 0.36.1", optional: true},
+      {:rustler, ">= 0.0.0", optional: true},
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:rustler_precompiled, "~> 0.8"},
