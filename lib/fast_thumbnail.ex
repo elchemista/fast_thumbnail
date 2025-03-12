@@ -8,6 +8,10 @@ defmodule FastThumbnail do
     force_build: System.get_env("RUSTLER_PRECOMPILATION_EXAMPLE_BUILD") in ["1", "true"],
     version: version
 
+  # use Rustler,
+  #   otp_app: :fast_thumbnail,
+  #   crate: "fast_thumbnail"
+
   @moduledoc "README.md"
              |> File.read!()
 

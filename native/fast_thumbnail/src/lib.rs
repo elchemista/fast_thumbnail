@@ -1,9 +1,9 @@
 use rustler;
 use std::fs::File;
-use std::io::{BufWriter, Write};
+use std::io::{BufReader, BufWriter, Write};
 
 use image::io::Reader as ImageReader;
-use image::{DynamicImage, ImageBuffer, Rgba};
+use image::{DynamicImage, ImageBuffer, ImageFormat, Rgba};
 
 use fast_image_resize::{images::Image as FirImage, pixels::PixelType, ResizeOptions, Resizer};
 
@@ -19,10 +19,34 @@ use webp::{Encoder as WebPEncoder, PixelLayout, WebPConfig};
 ///  - "overwrite": overwrite in the *original* format (JPEG→JPEG, PNG→PNG, etc.)
 #[rustler::nif(schedule = "DirtyCpu")]
 fn nif_create(path: String, width: u32, mode: String) -> Result<String, String> {
-    let reader = ImageReader::open(&path).map_err(|e| e.to_string())?;
-    let original_format = reader.format();
+    // Open the file, wrap in a BufReader, and have ImageReader guess the format by reading the header.
+    let file = File::open(&path).map_err(|e| e.to_string())?;
+    let reader = ImageReader::new(BufReader::new(file));
+    let mut reader = reader.with_guessed_format().map_err(|e| e.to_string())?;
+
+    // Check that we were able to detect a format
+    let original_format = reader
+        .format()
+        .ok_or_else(|| "Could not guess the image format".to_string())?;
+
+    // Optional: Return an error if the format is not one of your “supported” ones.
+    match original_format {
+        ImageFormat::Jpeg
+        | ImageFormat::Png
+        | ImageFormat::Gif
+        | ImageFormat::WebP
+        | ImageFormat::Bmp
+        | ImageFormat::Ico
+        | ImageFormat::Tiff => {}
+        other => {
+            return Err(format!("Unsupported image format: {:?}", other));
+        }
+    }
+
+    // Decode the image now that we have a reader
     let decoded_img = reader.decode().map_err(|e| e.to_string())?;
 
+    // Convert to RGBA8 for fast_image_resize
     let rgba_img = decoded_img.to_rgba8();
     let (src_w, src_h) = (rgba_img.width(), rgba_img.height());
 
@@ -50,12 +74,14 @@ fn nif_create(path: String, width: u32, mode: String) -> Result<String, String> 
 
     match mode.as_str() {
         "base64" => {
+            // Encode as a WebP and return in base64
             let webp_data = encode_webp_advanced(&resized_img, 75.0)?;
             let b64 = STANDARD.encode(webp_data);
             Ok(b64)
         }
 
         "webp" => {
+            // Encode as a WebP, then write to a .webp file
             let webp_data = encode_webp_advanced(&resized_img, 75.0)?;
             let new_path = format!("{}.webp", path);
             let file = File::create(&new_path).map_err(|e| e.to_string())?;
@@ -66,11 +92,8 @@ fn nif_create(path: String, width: u32, mode: String) -> Result<String, String> 
 
         "overwrite" => {
             // Overwrite the file in its original format (JPEG→JPEG, PNG→PNG, etc.).
-            let fmt =
-                original_format.ok_or_else(|| "Could not determine original format".to_string())?;
-
             resized_img
-                .save_with_format(&path, fmt)
+                .save_with_format(&path, original_format)
                 .map_err(|e| e.to_string())?;
             Ok(path)
         }
