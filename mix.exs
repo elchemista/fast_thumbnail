@@ -51,6 +51,7 @@ defmodule FastThumbnail.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      # {:rustler, "~> 0.36.1"},
       {:rustler, ">= 0.0.0", optional: true},
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},

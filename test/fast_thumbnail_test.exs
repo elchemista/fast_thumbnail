@@ -25,6 +25,21 @@ defmodule FastThumbnailTest do
     File.rm(webp_path)
   end
 
+  @tag :webp_unknown
+  test "creating a new .webp file from unknown format" do
+    source_path = "test/images/test_2"
+    webp_path = "#{source_path}.webp"
+
+    File.rm(webp_path)
+
+    result = FastThumbnail.create(source_path, 300, :webp)
+
+    assert {:ok, ^webp_path} = result
+    assert File.exists?(webp_path) == true
+
+    File.rm(webp_path)
+  end
+
   @tag :overwrite
   test "overwriting a file in original format" do
     source_path = "test/images/test_1.jpeg"
