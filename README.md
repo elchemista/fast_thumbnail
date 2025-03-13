@@ -62,93 +62,57 @@ Below is a **LiveView**:
 defmodule MyAppWeb.UploadLive do
   use MyAppWeb, :live_view
 
-  @impl Phoenix.LiveView
+  @impl true
   def mount(_params, _session, socket) do
     socket =
       socket
       # Limit to .jpg, .jpeg for this example
-      |> allow_upload(:avatar, accept: ~w(.jpg .jpeg), max_entries: 2)
+      |> allow_upload(:avatar, accept: ~w(.jpg .jpeg), max_entries: 1)
 
     {:ok, socket}
   end
 
-  @impl Phoenix.LiveView
+  @impl true
   def handle_event("validate", _params, socket) do
     {:noreply, socket}
   end
 
-  @impl Phoenix.LiveView
   def handle_event("cancel-upload", %{"ref" => ref}, socket) do
     {:noreply, cancel_upload(socket, :avatar, ref)}
   end
 
-  @impl Phoenix.LiveView
   def handle_event("save", _params, socket) do
     uploaded_files =
       consume_uploaded_entries(socket, entry, fn %{path: tmp_path} ->
-        save_result = save_and_process_upload(entry.client_name, tmp_path)
-      end)
+          upload_to_s3(tmp_path, entry.client_name)
 
-    # Make all check on uploaded_files {:ok, file} or {:ok, {:error, reason}}
+          # handle errors here
+      end)
 
     {:noreply, update(socket, :uploaded_files, &(&1 ++ uploaded_files))}
   end
 
-  defp save_and_process_upload(name, tmp_path) do
-    thumb_result = FastThumbnail.create(tmp_path, 200, :webp)
-
-    case thumb_result do
-      {:ok, thumb_path} ->
-
-        s3_result = upload_to_s3(thumb_path, name <> ".webp")
-
-        case s3_result do
-          {:ok, s3_url} ->
-              {:ok, s3_url}
-
-          {:error, reason} ->
-            {:ok, {:error, reason}}
-            # otherwise you can postone
-        end
-
-      {:error, reason} ->
-        {:error, reason}
-    end
-  end
-
   defp upload_to_s3(file_path, name_for_s3) do
-    # Build your AWS client
+    with {:ok, thumb_base64} <- FastThumbnail.create(file_path, 200, :base64) do
+
     access_key = System.get_env("AWS_ACCESS_KEY")
     secret_key = System.get_env("AWS_SECRET_KEY")
     region     = System.get_env("AWS_REGION")
     bucket     = System.get_env("AWS_BUCKET_NAME") || "my-bucket"
+    client     = AWS.Client.create(access_key, secret_key, region) 
 
-    client     = AWS.Client.create(access_key, secret_key, region)
-
-    # Read the local WebP thumbnail bytes
-    file_body = File.read!(file_path)
-
-    # We'll store it in S3 at some key (like "thumbnails/<filename>.webp")
-    # This is just an example – adjust folder/paths as needed
     folder = "thumbnails"
     key = "#{folder}/#{name_for_s3}"
 
-    s3_url = "https://s3.#{region}.amazonaws.com/#{bucket}/#{key}"
-
     # S3 `put_object` params
     put_params = %{
-      "Body" => file_body,
+      "Body" => thumb_base64,
       "ContentType" => "image/webp",
+      "ContentEncoding" => "base64",
       "Metadata" => %{"OriginalName" => name_for_s3}
     }
 
-    case AWS.S3.put_object(client, bucket, key, put_params) do
-      {:ok, _, _} ->
-        {:ok, s3_url}
-
-      {:error, reason} ->
-        {:error, reason}
-    end
+    AWS.S3.put_object(client, bucket, key, put_params)
   end
 end
 ```
