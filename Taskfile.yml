@@ -68,6 +68,7 @@ tasks:
     env:
       RUSTLER_PRECOMPILATION_EXAMPLE_BUILD: 1
     cmds:
+      - mix compile --force
       - "mix rustler_precompiled.download {{.PROJECT_NAME}} --all --print"
 
   publish:
