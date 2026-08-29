@@ -10,12 +10,17 @@ path = "src/lib.rs"
 crate-type = ["cdylib"]
 
 [dependencies]
-rustler = "0.36"
+rustler = { version = "0.38.0", default-features = false }
 fast_image_resize = { version = "5.1.2", features = ["image"] }
 image = "0.24.4"
 base64 = "0.22.1"
 webp = "0.3.0"
 libwebp-sys = "0.9"
+
+[features]
+default = ["nif_version_2_15"]
+nif_version_2_15 = ["rustler/nif_version_2_15"]
+nif_version_2_16 = ["rustler/nif_version_2_16"]
 
 [profile.release]
 codegen-units = 1

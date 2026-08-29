@@ -15,6 +15,12 @@ defmodule FastThumbnail.MixProject do
       deps: deps(),
       description: description(),
       package: package(),
+      rustler_precompiled: [
+        provider: :github,
+        owner: "elchemista",
+        repo: "fast_thumbnail",
+        tag: "v#{@version}"
+      ],
       docs: [
         main: "readme",
         extras: [
@@ -52,11 +58,10 @@ defmodule FastThumbnail.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      # {:rustler, "~> 0.36.1"},
-      {:rustler, ">= 0.0.0", optional: true},
+      {:rustler, "~> 0.38.0", optional: true},
       {:credo, "~> 1.7.19", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
-      {:rustler_precompiled, "~> 0.8"},
+      {:rustler_precompiled, "~> 0.9.0"},
       # Documentation Provider
       {:ex_doc, "~> 0.40.3", only: [:dev, :test], optional: true, runtime: false}
     ]

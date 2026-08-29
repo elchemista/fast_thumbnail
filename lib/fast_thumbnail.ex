@@ -6,6 +6,7 @@ defmodule FastThumbnail do
     crate: "fast_thumbnail",
     base_url: "https://github.com/elchemista/fast_thumbnail/releases/download/v#{version}",
     force_build: System.get_env("RUSTLER_PRECOMPILATION_EXAMPLE_BUILD") in ["1", "true"],
+    nif_versions: ["2.15", "2.16"],
     version: version
 
   # use Rustler,
