@@ -1,7 +1,7 @@
 defmodule FastThumbnail.MixProject do
   use Mix.Project
 
-  @version "0.1.5"
+  @version "0.1.6"
 
   def project do
     [
@@ -11,6 +11,7 @@ defmodule FastThumbnail.MixProject do
       elixir: "~> 1.18",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
+      test_coverage: [summary: [threshold: 90]],
       deps: deps(),
       description: description(),
       package: package(),
@@ -53,11 +54,11 @@ defmodule FastThumbnail.MixProject do
     [
       # {:rustler, "~> 0.36.1"},
       {:rustler, ">= 0.0.0", optional: true},
-      {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
+      {:credo, "~> 1.7.19", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:rustler_precompiled, "~> 0.8"},
       # Documentation Provider
-      {:ex_doc, "~> 0.28.3", only: [:dev, :test], optional: true, runtime: false}
+      {:ex_doc, "~> 0.40.3", only: [:dev, :test], optional: true, runtime: false}
     ]
   end
 end

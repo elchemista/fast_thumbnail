@@ -26,11 +26,11 @@ tasks:
         ignore_error: true
 
   test:
-    desc: Run tests (with Rust)
+    desc: Run tests and enforce coverage (with Rust)
     env:
       RUSTLER_PRECOMPILATION_EXAMPLE_BUILD: 1
     cmds:
-      - mix test --trace
+      - mix test --cover --trace
 
   test-using-precompiled-binaries:
     desc: Run tests (without Rust)

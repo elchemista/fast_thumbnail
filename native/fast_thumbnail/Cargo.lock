@@ -159,7 +159,7 @@ dependencies = [
 
 [[package]]
 name = "fast_thumbnail"
-version = "0.1.0"
+version = "0.1.6"
 dependencies = [
  "base64",
  "fast_image_resize",

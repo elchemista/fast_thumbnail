@@ -1,5 +1,8 @@
 name: Build precompiled NIFs
 
+permissions:
+  contents: write
+
 on:
   push:
     tags:
@@ -27,13 +30,13 @@ jobs:
 
     steps:
       - name: Checkout source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Extract project version
         shell: bash
         run: |
           # Get the project version from mix.exs
-          echo "PROJECT_VERSION=$(sed -n 's/^  @version "\(.*\)"/\1/p' mix.exs | head -n1)" >> $GITHUB_ENV
+          echo "PROJECT_VERSION=$(sed -n 's/^  @version "\(.*\)"/\1/p' mix.exs | head -n1)" >> "$GITHUB_ENV"
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -59,7 +62,7 @@ jobs:
           path: ${{ steps.build-crate.outputs.file-path }}
 
       - name: Publish archives and packages
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: |
             ${{ steps.build-crate.outputs.file-path }}
