@@ -47,7 +47,16 @@ defmodule FastThumbnail.MixProject do
     [
       name: "fast_thumbnail",
       maintainers: ["Yuriy Zhar"],
-      files: ~w(mix.exs README.md lib native test LICENSE checksum-*.exs .formatter.exs),
+      files: ~w(
+        lib
+        mix.exs
+        README.md
+        LICENSE
+        checksum-*.exs
+        native/fast_thumbnail/Cargo.toml
+        native/fast_thumbnail/Cargo.lock
+        native/fast_thumbnail/src
+      ),
       licenses: ["Apache-2.0"],
       links: %{
         "GitHub" => "https://github.com/elchemista/fast_thumbnail"
